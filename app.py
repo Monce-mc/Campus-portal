@@ -7,7 +7,7 @@ from database import RegistrationSystem
 from models import Student, Course, Enrollment
 
 app = Flask(__name__)
-registration = RegistrationSystem(Path(__file__).with_name("instagram.db"))
+registration = RegistrationSystem(Path(__file__).with_name("courses.db"))
 
 
 @app.route("/", methods=["GET"])
