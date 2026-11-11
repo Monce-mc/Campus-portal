@@ -1,4 +1,4 @@
-"""Object-oriented models for the Student, Course and Enrollment system."""
+
 
 from dataclasses import dataclass
 
