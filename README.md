@@ -37,7 +37,7 @@ On macOS/Linux, use `python3` instead of `python` if required.
 4. Use Show All / Show All Students / Show All Courses / Show All Enrollments.
 
 ## Database
-The application automatically creates a local `instagram.db` SQLite database on the first run. You do not need to upload any personal student records to GitHub. The database is excluded by `.gitignore`.
+The application automatically creates a local `courses.db` SQLite database on the first run. You do not need to upload any personal student records to GitHub. The database is excluded by `.gitignore`.
 
 ## Testing
 Run `python -m unittest discover -s tests -v`.
