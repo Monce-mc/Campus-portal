@@ -1,12 +1,9 @@
-"""SQLite persistence and the object-oriented registration service."""
-
 import sqlite3
 from pathlib import Path
 from models import Student, Course, Enrollment
 
 
 class RegistrationSystem:
-    """Creates and retrieves Student, Course and Enrollment objects."""
 
     def __init__(self, db_path: str | Path):
         self.db_path = str(db_path)
@@ -19,7 +16,7 @@ class RegistrationSystem:
         return conn
 
     def initialize_database(self):
-        """Create an empty database on first run; keep existing records intact."""
+      
         with self._connect() as conn:
             conn.executescript("""
                 CREATE TABLE IF NOT EXISTS Students (
