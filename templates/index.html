@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Portal | University Registration</title>
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f1f4fc; color:#1e293b; font:15px/1.5 Arial,sans-serif; }
+    header { background:#192655; color:#fff; padding:28px max(22px,calc((100vw - 1000px)/2)); }
+    header h1 { margin:0; font-size:26px; }
+    header p { margin:4px 0 0; color:#cbd5e1; }
+    main { max-width:1000px; margin:32px auto; padding:0 22px 45px; }
+    h2 { font-size:20px; margin:0 0 16px; }
+    h3 { font-size:17px; margin:0; }
+    .subtitle,.muted { color:#64748b; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .card { background:white; padding:24px; border-radius:14px; box-shadow:0 7px 25px #1725540b; margin:18px 0; }
+    label { display:block; margin:13px 0 5px; font-weight:bold; font-size:13px; }
+    input,select { width:100%; border:1px solid #cbd5e1; padding:12px; border-radius:8px; font:inherit; background:#fff; }
+    button,.button-link { border:0; display:inline-block; text-align:center; padding:11px 17px; border-radius:8px; background:#4f46e5; color:white; font:inherit; font-weight:bold; cursor:pointer; text-decoration:none; }
+    button:hover,.button-link:hover { background:#3730a3; }
+    form button { width:100%; margin-top:18px; }
+    .show-buttons { display:flex; flex-wrap:wrap; gap:9px; margin:15px 0 20px; }
+    .show-buttons .button-link { background:white; color:#4338ca; border:1px solid #c7d2fe; }
+    .show-buttons .active { background:#4f46e5; color:white; }
+    .notice { border-radius:8px; padding:12px 16px; margin:18px 0; background:#e0e7ff; color:#312e81; }
+    .error { background:#fef2f2; color:#991b1b; }
+    .table-scroll { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; text-align:left; }
+    th,td { padding:11px 8px; border-bottom:1px solid #e2e8f0; }
+    th { color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:.025em; }
+    tr:last-child td { border-bottom:0; }
+    .count { color:#6366f1; font-size:15px; }
+    @media (max-width:650px) { header h1 { font-size:23px; } .card { padding:18px; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🎓 Campus Portal</h1>
+  <p>Student • Course • Enrollment Management</p>
+</header>
+<main>
+  <h1>Student Dashboard</h1>
+  <p class="subtitle">Create students and courses, enroll students, and view every record.</p>
+  {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+  {% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+
+  <div class="grid">
+    <section class="card">
+      <h2>1. Add Student</h2>
+      <form action="{{ url_for('add_student') }}" method="post">
+        <label for="first_name">First name</label>
+        <input id="first_name" name="first_name" maxlength="50" required>
+        <label for="last_name">Last name</label>
+        <input id="last_name" name="last_name" maxlength="50" required>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" maxlength="100" required>
+        <button type="submit">Add Student</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>2. Add Course</h2>
+      <form action="{{ url_for('add_course') }}" method="post">
+        <label for="course_name">Course name</label>
+        <input id="course_name" name="course_name" maxlength="100" placeholder="Database Lab" required>
+        <label for="course_code">Course code</label>
+        <input id="course_code" name="course_code" maxlength="10" placeholder="MAC250" required>
+        <label for="credits">Credits</label>
+        <input id="credits" name="credits" type="number" min="0" max="30" placeholder="3" required>
+        <button type="submit">Add Course</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>3. Enroll a Student</h2>
+    {% if students and courses %}
+      <form action="{{ url_for('add_enrollment') }}" method="post">
+        <label for="student_id">Student</label>
+        <select id="student_id" name="student_id" required>
+          {% for student in students %}
+          <option value="{{ student.student_id }}">{{ student.full_name }}</option>
+          {% endfor %}
+        </select>
+        <label for="course_id">Course</label>
+        <select id="course_id" name="course_id" required>
+          {% for course in courses %}
+          <option value="{{ course.course_id }}">{{ course.course_code }}: {{ course.course_name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Enroll Student</button>
+      </form>
+    {% else %}
+      <p class="muted">Add at least one student and one course to enable enrollment.</p>
+    {% endif %}
+  </section>
+
+  <section class="card" id="records">
+    <h2>4. Show All Records</h2>
+    <div class="show-buttons">
+      <a class="button-link {{ 'active' if show == 'all' else '' }}" href="{{ url_for('home',show='all') }}#records">Show All</a>
+      <a class="button-link {{ 'active' if show == 'students' else '' }}" href="{{ url_for('home',show='students') }}#records">Show All Students</a>
+      <a class="button-link {{ 'active' if show == 'courses' else '' }}" href="{{ url_for('home',show='courses') }}#records">Show All Courses</a>
+      <a class="button-link {{ 'active' if show == 'enrollments' else '' }}" href="{{ url_for('home',show='enrollments') }}#records">Show All Enrollments</a>
+    </div>
+    {% if show in ('students', 'all') %}
+      <h3>Students <span class="count">({{ students|length }})</span></h3>
+      <div class="table-scroll">
+      <table><thead><tr><th>ID</th><th>Student</th><th>Email</th></tr></thead><tbody>
+        {% for s in students %}<tr><td>{{ s.student_id }}</td><td>{{ s.full_name }}</td><td>{{ s.email }}</td></tr>
+        {% else %}<tr><td colspan="3" class="muted">No students yet.</td></tr>{% endfor %}
+      </tbody></table>
+      </div>
+    {% endif %}
+    {% if show in ('courses', 'all') %}
+      <h3 style="margin-top:22px">Courses <span class="count">({{ courses|length }})</span></h3>
+      <div class="table-scroll">
+      <table><thead><tr><th>ID</th><th>Code</th><th>Course</th><th>Credits</th></tr></thead><tbody>
+        {% for c in courses %}<tr><td>{{ c.course_id }}</td><td>{{ c.course_code }}</td><td>{{ c.course_name }}</td><td>{{ c.credits }}</td></tr>
+        {% else %}<tr><td colspan="4" class="muted">No courses yet.</td></tr>{% endfor %}
+      </tbody></table>
+      </div>
+    {% endif %}
+    {% if show in ('enrollments', 'all') %}
+      <h3 style="margin-top:22px">Enrollments <span class="count">({{ enrollments|length }})</span></h3>
+      <div class="table-scroll">
+      <table><thead><tr><th>Student</th><th>Course</th><th>Course Name</th></tr></thead><tbody>
+        {% for e in enrollments %}<tr><td>{{ e.student_name }}</td><td>{{ e.course_code }}</td><td>{{ e.course_name }}</td></tr>
+        {% else %}<tr><td colspan="3" class="muted">No enrollments yet.</td></tr>{% endfor %}
+      </tbody></table>
+      </div>
+    {% endif %}
+  </section>
+</main>
+</body>
+</html>
